@@ -584,8 +584,12 @@
          * 玩法卡片点击
          */
         function openGame(game) {
+            // 扫雷跳转到独立页面
+            if (game === 'minesweeper') {
+                window.location.href = 'saolei.html';
+                return;
+            }
             const names = {
-                minesweeper: '扫雷 🏴',
                 running: '上伊那牡丹快跑 🏃',
                 maimai: '舞萌dx 🎵',
                 bot: '调戏bot 🤖'
