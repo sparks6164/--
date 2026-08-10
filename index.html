@@ -16,24 +16,20 @@
             box-sizing: border-box;
         }
 
-        /* ===== 网站容器 ===== */
-        html, body {
-            height: 100%;
-            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            /* 柔和渐变背景 — 暖奶油色到淡紫蓝 */
+            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
+            /* 柔和渐变背景 */
             background: linear-gradient(135deg, #fef9f0 0%, #fdf2f5 25%, #f3f0ff 50%, #eef4ff 75%, #f0faf5 100%);
             background-attachment: fixed;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* 溢出隐藏，防止全屏滚动条 */
-            overflow: hidden;
+            min-height: 100vh;
+            position: relative;
         }
 
-        /* 背景装饰光斑 */
+        /* ===== 背景装饰光斑 ===== */
         body::before {
             content: '';
             position: fixed;
@@ -41,7 +37,7 @@
             right: -120px;
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(255, 182, 140, 0.35) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 182, 140, 0.30) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
@@ -54,43 +50,33 @@
             left: -100px;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(167, 180, 255, 0.30) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(167, 180, 255, 0.25) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
         }
 
+        /* ===== 页面容器 ===== */
         .site-wrapper {
-            /* 充满整个屏幕 */
-            position: fixed;
-            inset: 0;
-            /* 边框：灰色，1px */
-            border: 1px solid #cccccc;
-            /* 圆角：10px */
-            border-radius: 10px;
-            /* 半透明白色背景 — 让底部渐变透出 */
-            background-color: rgba(255, 255, 255, 0.55);
-            backdrop-filter: blur(2px);
-            /* 内部留白 — 上下加大以拉开功能区与正文距离 */
-            padding: 140px 60px 80px 60px;
-            /* 相对定位，为右上角功能区提供锚点 */
             position: relative;
-            /* 最小宽度 */
-            min-width: 320px;
-            /* 容器自身阴影，增加层次感 */
-            box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.6),
-                        0 2px 12px rgba(0, 0, 0, 0.06);
-            /* 层叠顺序 */
             z-index: 1;
+            border: 1px solid #cccccc;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.50);
+            backdrop-filter: blur(2px);
+            min-height: 100vh;
+            box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.5),
+                        0 2px 12px rgba(0, 0, 0, 0.06);
         }
 
-        /* ===== 右上角功能区 ===== */
+        /* ===== 右上角导航 ===== */
         .nav-area {
             position: absolute;
             top: 20px;
             right: 24px;
             display: flex;
             gap: 12px;
+            z-index: 10;
         }
 
         /* ===== 按钮通用样式 ===== */
@@ -100,11 +86,8 @@
             border-radius: 6px;
             padding: 8px 20px;
             cursor: pointer;
-            /* 淡入淡出动画 */
             animation: fadeInOut 3s ease-in-out infinite;
-            /* 过渡效果 */
-            transition: box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
-            /* 响应式：不换行 */
+            transition: box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease;
             white-space: nowrap;
             border: none;
             font-weight: 500;
@@ -163,65 +146,228 @@
 
         /* ===== 淡入淡出动画 ===== */
         @keyframes fadeInOut {
-            0%, 100% {
-                opacity: 0.75;
-            }
-            50% {
-                opacity: 1;
-            }
+            0%, 100% { opacity: 0.75; }
+            50%      { opacity: 1; }
         }
 
-        /* ===== 主体文字 ===== */
-        .main-text {
-            /* 思源黑体 */
-            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
-            /* 字号 50px */
-            font-size: 50px;
-            /* 黑色 */
-            color: #000000;
-            /* 居中 */
+        /* ================================================ */
+        /*  中心区域                                          */
+        /* ================================================ */
+        .center-section {
+            /* 浅色调背景 A — 暖奶油白 */
+            background-color: #fefcf8;
+            padding: 100px 40px 60px 40px;
             text-align: center;
-            /* 多层阴影叠加 — 增强立体感和深度 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 主体大字 */
+        .main-text {
+            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
+            font-size: 50px;
+            color: #000000;
+            text-align: center;
             text-shadow:
                 0 1px 0 rgba(255, 255, 255, 0.8),
                 0 2px 3px rgba(0, 0, 0, 0.12),
                 0 4px 8px rgba(0, 0, 0, 0.10),
                 0 8px 16px rgba(0, 0, 0, 0.08),
                 0 12px 24px rgba(0, 0, 0, 0.06);
-            /* 字重 */
             font-weight: 700;
-            /* 字间距 — 增加呼吸感 */
             letter-spacing: 4px;
-            /* 行高 */
             line-height: 1.5;
-            /* 确保文字在容器中居中 */
-            margin: 0;
+            margin-bottom: 40px;
         }
 
-        /* ===== 响应式设计 ===== */
+        /* 对话框（输入框） */
+        .dialog-box {
+            width: 100%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
+            font-size: 18px;
+            color: #333333;
+            /* 阴影：灰色，10px */
+            box-shadow: 0 4px 10px rgba(128, 128, 128, 0.30);
+            resize: vertical;
+            min-height: 60px;
+            line-height: 1.6;
+            outline: none;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .dialog-box:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 4px 14px rgba(128, 128, 128, 0.40);
+        }
+
+        /* 对话框按钮区 */
+        .dialog-buttons {
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .dialog-btn {
+            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 10px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        /* 发送按钮 */
+        .btn-send {
+            background: linear-gradient(135deg, #5ec4b0, #3dab93);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(61, 171, 147, 0.30);
+        }
+        .btn-send:hover {
+            background: linear-gradient(135deg, #72d0be, #50b8a1);
+            box-shadow: 0 6px 16px rgba(61, 171, 147, 0.45);
+            transform: translateY(-2px);
+        }
+        .btn-send:active {
+            transform: translateY(0);
+        }
+
+        /* 清空按钮 */
+        .btn-clear {
+            background: linear-gradient(135deg, #e0e0e0, #cccccc);
+            color: #555555;
+            box-shadow: 0 4px 10px rgba(128, 128, 128, 0.25);
+        }
+        .btn-clear:hover {
+            background: linear-gradient(135deg, #ececec, #d8d8d8);
+            box-shadow: 0 6px 16px rgba(128, 128, 128, 0.40);
+            transform: translateY(-2px);
+        }
+        .btn-clear:active {
+            transform: translateY(0);
+        }
+
+        /* ================================================ */
+        /*  玩法区                                            */
+        /* ================================================ */
+        .play-section {
+            /* 浅色调背景 B — 淡薰衣草灰 */
+            background-color: #f5f3fa;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .play-section .section-label {
+            font-size: 18px;
+            color: #888888;
+            margin-bottom: 28px;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+
+        .play-grid {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        /* 圆角正方形卡片 */
+        .play-card {
+            width: 150px;
+            height: 150px;
+            background-color: #ffffff;
+            border: 1px solid #e0dde8;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 17px;
+            font-weight: 500;
+            color: #444444;
+            padding: 12px;
+            line-height: 1.5;
+            box-shadow: 0 3px 10px rgba(128, 128, 128, 0.12);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            user-select: none;
+        }
+
+        .play-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 24px rgba(128, 128, 128, 0.20);
+            border-color: #c5bfd6;
+        }
+
+        /* 每个卡片不同的强调色（左侧细条用 box-shadow inset 模拟） */
+        .play-card:nth-child(1) { border-top: 3px solid #ff8a7a; }
+        .play-card:nth-child(2) { border-top: 3px solid #5ec4b0; }
+        .play-card:nth-child(3) { border-top: 3px solid #6db3f2; }
+        .play-card:nth-child(4) { border-top: 3px solid #a78bfa; }
+
+        /* ================================================ */
+        /*  版权信息区                                        */
+        /* ================================================ */
+        .copyright-section {
+            background-color: #f5f3fa;
+            text-align: center;
+            padding: 10px 40px 16px 40px;
+        }
+
+        .copyright-text {
+            font-size: 14px;
+            color: #999999;
+            letter-spacing: 1px;
+        }
+
+        /* ================================================ */
+        /*  友情链接区                                        */
+        /* ================================================ */
+        .links-section {
+            background-color: #f5f3fa;
+            text-align: center;
+            padding: 0 40px 40px 40px;
+        }
+
+        .links-text {
+            font-size: 14px;
+            color: #999999;
+            letter-spacing: 1px;
+        }
+
+        .links-text a {
+            color: #8b6fe0;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .links-text a:hover {
+            color: #a78bfa;
+            text-decoration: underline;
+        }
+
+        /* ================================================ */
+        /*  响应式设计                                        */
+        /* ================================================ */
 
         /* 平板及以下 */
         @media (max-width: 768px) {
             .site-wrapper {
-                padding: 100px 30px 50px 30px;
-                min-width: 280px;
                 border-radius: 0;
-            }
-
-            .main-text {
-                font-size: 32px;
-                letter-spacing: 2px;
-                text-shadow:
-                    0 1px 0 rgba(255, 255, 255, 0.8),
-                    0 2px 3px rgba(0, 0, 0, 0.12),
-                    0 4px 8px rgba(0, 0, 0, 0.10),
-                    0 6px 12px rgba(0, 0, 0, 0.06);
             }
 
             .nav-area {
                 position: static;
                 justify-content: center;
-                margin-bottom: 30px;
+                padding: 16px 0 0 0;
                 gap: 8px;
             }
 
@@ -233,18 +379,58 @@
             .nav-btn:nth-child(1) { box-shadow: 0 3px 8px rgba(255, 107, 91, 0.35); }
             .nav-btn:nth-child(2) { box-shadow: 0 3px 8px rgba(61, 171, 147, 0.35); }
             .nav-btn:nth-child(3) { box-shadow: 0 3px 8px rgba(139, 111, 224, 0.35); }
+
+            .center-section {
+                padding: 60px 20px 40px 20px;
+            }
+
+            .main-text {
+                font-size: 32px;
+                letter-spacing: 2px;
+                margin-bottom: 28px;
+                text-shadow:
+                    0 1px 0 rgba(255, 255, 255, 0.8),
+                    0 2px 3px rgba(0, 0, 0, 0.12),
+                    0 4px 8px rgba(0, 0, 0, 0.10),
+                    0 6px 12px rgba(0, 0, 0, 0.06);
+            }
+
+            .dialog-box {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+
+            .dialog-btn {
+                font-size: 14px;
+                padding: 8px 20px;
+            }
+
+            .play-section {
+                padding: 36px 20px;
+            }
+
+            .play-card {
+                width: 120px;
+                height: 120px;
+                font-size: 14px;
+                border-radius: 14px;
+            }
+
+            .play-grid {
+                gap: 14px;
+            }
         }
 
         /* 手机 */
         @media (max-width: 480px) {
-            .site-wrapper {
-                padding: 80px 16px 36px 16px;
-                border-radius: 0;
+            .center-section {
+                padding: 50px 12px 32px 12px;
             }
 
             .main-text {
                 font-size: 24px;
                 letter-spacing: 1px;
+                margin-bottom: 22px;
                 text-shadow:
                     0 1px 0 rgba(255, 255, 255, 0.8),
                     0 2px 3px rgba(0, 0, 0, 0.10),
@@ -252,9 +438,19 @@
                     0 5px 10px rgba(0, 0, 0, 0.05);
             }
 
-            .nav-area {
-                gap: 6px;
-                margin-bottom: 24px;
+            .dialog-box {
+                font-size: 15px;
+                padding: 10px 14px;
+                border-radius: 8px;
+            }
+
+            .dialog-buttons {
+                gap: 8px;
+            }
+
+            .dialog-btn {
+                font-size: 13px;
+                padding: 7px 16px;
             }
 
             .nav-btn {
@@ -266,36 +462,136 @@
             .nav-btn:nth-child(1) { box-shadow: 0 2px 6px rgba(255, 107, 91, 0.35); }
             .nav-btn:nth-child(2) { box-shadow: 0 2px 6px rgba(61, 171, 147, 0.35); }
             .nav-btn:nth-child(3) { box-shadow: 0 2px 6px rgba(139, 111, 224, 0.35); }
+
+            .play-section {
+                padding: 28px 12px;
+            }
+
+            .play-grid {
+                gap: 10px;
+            }
+
+            .play-card {
+                width: 70px;
+                height: 70px;
+                font-size: 11px;
+                border-radius: 12px;
+                padding: 6px;
+            }
+
+            .copyright-section {
+                padding: 8px 16px 12px 16px;
+            }
+
+            .links-section {
+                padding: 0 16px 28px 16px;
+            }
+
+            .copyright-text,
+            .links-text {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="site-wrapper">
-        <!-- 右上角功能区 -->
+        <!-- 右上角导航 -->
         <nav class="nav-area">
             <button class="nav-btn" onclick="navigate('home')">首页</button>
             <button class="nav-btn" onclick="navigate('features')">功能</button>
             <button class="nav-btn" onclick="navigate('about')">关于</button>
         </nav>
 
-        <!-- 主体大字 -->
-        <h1 class="main-text">你好，这里是leg的小站</h1>
+        <!-- ============ 中心区域 ============ -->
+        <section class="center-section">
+            <!-- 主体大字 -->
+            <h1 class="main-text">你好，这里是leg的小站</h1>
+
+            <!-- 对话框 -->
+            <textarea
+                class="dialog-box"
+                id="dialogInput"
+                rows="2"
+                placeholder="输入你想说的话..."
+            >hello world！</textarea>
+
+            <!-- 发送 / 清空 按钮 -->
+            <div class="dialog-buttons">
+                <button class="dialog-btn btn-send" onclick="sendMessage()">发送</button>
+                <button class="dialog-btn btn-clear" onclick="clearMessage()">清空</button>
+            </div>
+        </section>
+
+        <!-- ============ 玩法区 ============ -->
+        <section class="play-section">
+            <p class="section-label">— 玩法 —</p>
+            <div class="play-grid">
+                <div class="play-card" onclick="openGame('minesweeper')">扫雷</div>
+                <div class="play-card" onclick="openGame('running')">上伊那牡丹快跑</div>
+                <div class="play-card" onclick="openGame('maimai')">舞萌dx</div>
+                <div class="play-card" onclick="openGame('bot')">调戏bot</div>
+            </div>
+        </section>
+
+        <!-- ============ 版权信息区 ============ -->
+        <section class="copyright-section">
+            <p class="copyright-text">版权所有，转载请注明出处</p>
+        </section>
+
+        <!-- ============ 友情链接区 ============ -->
+        <section class="links-section">
+            <p class="links-text">
+                友情链接：
+                <a href="#">xxx</a>、
+                <a href="#">xxx</a>、
+                <a href="#">xxx</a>
+            </p>
+        </section>
     </div>
 
     <script>
         /**
-         * 导航按钮点击处理
-         * @param {string} page - 目标页面标识
+         * 导航按钮点击
          */
         function navigate(page) {
-            const messages = {
-                home: '🏠 欢迎来到首页！',
-                features: '⚙️ 功能页面 — 更多精彩即将上线。',
-                about: 'ℹ️ 关于leg的小站 — 一个简约的个人站点。'
-            };
             console.log(`导航至: ${page}`);
-            // 预留：后续可扩展为实际页面跳转
-            // window.location.href = `/${page}.html`;
+        }
+
+        /**
+         * 发送消息
+         */
+        function sendMessage() {
+            const input = document.getElementById('dialogInput');
+            const message = input.value.trim();
+            if (message) {
+                alert('📨 已发送: ' + message);
+            } else {
+                alert('⚠️ 请输入内容后再发送');
+            }
+        }
+
+        /**
+         * 清空消息
+         */
+        function clearMessage() {
+            const input = document.getElementById('dialogInput');
+            input.value = '';
+            input.focus();
+        }
+
+        /**
+         * 玩法卡片点击
+         */
+        function openGame(game) {
+            const names = {
+                minesweeper: '扫雷 🏴',
+                running: '上伊那牡丹快跑 🏃',
+                maimai: '舞萌dx 🎵',
+                bot: '调戏bot 🤖'
+            };
+            console.log(`打开游戏: ${game}`);
+            alert('即将上线: ' + (names[game] || game));
         }
     </script>
 </body>
