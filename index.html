@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>leg的小站</title>
+    <!-- 思源黑体 (Noto Sans SC) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== 全局重置 ===== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===== 网站容器 ===== */
+        html, body {
+            height: 100%;
+            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
+        }
+
+        body {
+            /* 白色背景 */
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .site-wrapper {
+            /* 边框：灰色，1px */
+            border: 1px solid #cccccc;
+            /* 圆角：10px */
+            border-radius: 10px;
+            /* 白色背景 */
+            background-color: #ffffff;
+            /* 内部留白 */
+            padding: 80px 60px;
+            /* 相对定位，为右上角功能区提供锚点 */
+            position: relative;
+            /* 最小宽度 */
+            min-width: 320px;
+            max-width: 90vw;
+            /* 容器自身阴影，增加层次感 */
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ===== 右上角功能区 ===== */
+        .nav-area {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        /* ===== 按钮通用样式 ===== */
+        .nav-btn {
+            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
+            font-size: 16px;
+            color: #333333;
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 6px;
+            padding: 8px 20px;
+            cursor: pointer;
+            /* 阴影效果：灰色，10px */
+            box-shadow: 0 4px 10px rgba(128, 128, 128, 0.3);
+            /* 淡入淡出动画 */
+            animation: fadeInOut 3s ease-in-out infinite;
+            /* 过渡效果 */
+            transition: box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+            /* 响应式：不换行 */
+            white-space: nowrap;
+        }
+
+        /* 按钮悬停效果 */
+        .nav-btn:hover {
+            box-shadow: 0 6px 16px rgba(128, 128, 128, 0.45);
+            transform: translateY(-2px);
+            background-color: #f8f8f8;
+        }
+
+        /* 按钮点击效果 */
+        .nav-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(128, 128, 128, 0.25);
+        }
+
+        /* 三个按钮错开动画延迟，避免同步 */
+        .nav-btn:nth-child(1) { animation-delay: 0s; }
+        .nav-btn:nth-child(2) { animation-delay: 0.5s; }
+        .nav-btn:nth-child(3) { animation-delay: 1s; }
+
+        /* ===== 淡入淡出动画 ===== */
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.75;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ===== 主体文字 ===== */
+        .main-text {
+            /* 思源黑体 */
+            font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
+            /* 字号 30px */
+            font-size: 30px;
+            /* 黑色 */
+            color: #000000;
+            /* 居中 */
+            text-align: center;
+            /* 阴影效果 */
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+            /* 字重 */
+            font-weight: 500;
+            /* 行高 */
+            line-height: 1.6;
+            /* 确保文字在容器中居中 */
+            margin: 0;
+        }
+
+        /* ===== 响应式设计 ===== */
+
+        /* 平板及以下 */
+        @media (max-width: 768px) {
+            .site-wrapper {
+                padding: 60px 30px;
+                min-width: 280px;
+                max-width: 95vw;
+            }
+
+            .main-text {
+                font-size: 24px;
+            }
+
+            .nav-area {
+                position: static;
+                justify-content: center;
+                margin-bottom: 30px;
+                gap: 8px;
+            }
+
+            .nav-btn {
+                font-size: 14px;
+                padding: 6px 14px;
+                box-shadow: 0 3px 8px rgba(128, 128, 128, 0.3);
+            }
+        }
+
+        /* 手机 */
+        @media (max-width: 480px) {
+            .site-wrapper {
+                padding: 40px 16px;
+                border-radius: 8px;
+            }
+
+            .main-text {
+                font-size: 20px;
+            }
+
+            .nav-area {
+                gap: 6px;
+                margin-bottom: 24px;
+            }
+
+            .nav-btn {
+                font-size: 13px;
+                padding: 5px 10px;
+                box-shadow: 0 2px 6px rgba(128, 128, 128, 0.3);
+                border-radius: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="site-wrapper">
+        <!-- 右上角功能区 -->
+        <nav class="nav-area">
+            <button class="nav-btn" onclick="navigate('home')">首页</button>
+            <button class="nav-btn" onclick="navigate('features')">功能</button>
+            <button class="nav-btn" onclick="navigate('about')">关于</button>
+        </nav>
+
+        <!-- 主体大字 -->
+        <h1 class="main-text">你好，这里是leg的小站</h1>
+    </div>
+
+    <script>
+        /**
+         * 导航按钮点击处理
+         * @param {string} page - 目标页面标识
+         */
+        function navigate(page) {
+            const messages = {
+                home: '🏠 欢迎来到首页！',
+                features: '⚙️ 功能页面 — 更多精彩即将上线。',
+                about: 'ℹ️ 关于leg的小站 — 一个简约的个人站点。'
+            };
+            console.log(`导航至: ${page}`);
+            // 预留：后续可扩展为实际页面跳转
+            // window.location.href = `/${page}.html`;
+        }
+    </script>
+</body>
+</html>
