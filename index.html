@@ -23,29 +23,65 @@
         }
 
         body {
-            /* 白色背景 */
-            background-color: #ffffff;
+            /* 柔和渐变背景 — 暖奶油色到淡紫蓝 */
+            background: linear-gradient(135deg, #fef9f0 0%, #fdf2f5 25%, #f3f0ff 50%, #eef4ff 75%, #f0faf5 100%);
+            background-attachment: fixed;
             display: flex;
             justify-content: center;
             align-items: center;
+            /* 溢出隐藏，防止全屏滚动条 */
+            overflow: hidden;
+        }
+
+        /* 背景装饰光斑 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -180px;
+            right: -120px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 182, 140, 0.35) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -200px;
+            left: -100px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(167, 180, 255, 0.30) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .site-wrapper {
+            /* 充满整个屏幕 */
+            position: fixed;
+            inset: 0;
             /* 边框：灰色，1px */
             border: 1px solid #cccccc;
             /* 圆角：10px */
             border-radius: 10px;
-            /* 白色背景 */
-            background-color: #ffffff;
-            /* 内部留白 */
-            padding: 80px 60px;
+            /* 半透明白色背景 — 让底部渐变透出 */
+            background-color: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(2px);
+            /* 内部留白 — 上下加大以拉开功能区与正文距离 */
+            padding: 140px 60px 80px 60px;
             /* 相对定位，为右上角功能区提供锚点 */
             position: relative;
             /* 最小宽度 */
             min-width: 320px;
-            max-width: 90vw;
             /* 容器自身阴影，增加层次感 */
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.6),
+                        0 2px 12px rgba(0, 0, 0, 0.06);
+            /* 层叠顺序 */
+            z-index: 1;
         }
 
         /* ===== 右上角功能区 ===== */
@@ -61,39 +97,69 @@
         .nav-btn {
             font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
             font-size: 16px;
-            color: #333333;
-            background-color: #ffffff;
-            border: 1px solid #dddddd;
             border-radius: 6px;
             padding: 8px 20px;
             cursor: pointer;
-            /* 阴影效果：灰色，10px */
-            box-shadow: 0 4px 10px rgba(128, 128, 128, 0.3);
             /* 淡入淡出动画 */
             animation: fadeInOut 3s ease-in-out infinite;
             /* 过渡效果 */
-            transition: box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+            transition: box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
             /* 响应式：不换行 */
             white-space: nowrap;
+            border: none;
+            font-weight: 500;
         }
 
-        /* 按钮悬停效果 */
-        .nav-btn:hover {
-            box-shadow: 0 6px 16px rgba(128, 128, 128, 0.45);
+        /* --- 首页按钮：暖珊瑚色 --- */
+        .nav-btn:nth-child(1) {
+            background: linear-gradient(135deg, #ff8a7a, #ff6b5b);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(255, 107, 91, 0.35);
+            animation-delay: 0s;
+        }
+        .nav-btn:nth-child(1):hover {
+            background: linear-gradient(135deg, #ff9b8d, #ff7d6f);
+            box-shadow: 0 6px 18px rgba(255, 107, 91, 0.50);
             transform: translateY(-2px);
-            background-color: #f8f8f8;
         }
-
-        /* 按钮点击效果 */
-        .nav-btn:active {
+        .nav-btn:nth-child(1):active {
             transform: translateY(0);
-            box-shadow: 0 2px 6px rgba(128, 128, 128, 0.25);
+            box-shadow: 0 2px 6px rgba(255, 107, 91, 0.30);
         }
 
-        /* 三个按钮错开动画延迟，避免同步 */
-        .nav-btn:nth-child(1) { animation-delay: 0s; }
-        .nav-btn:nth-child(2) { animation-delay: 0.5s; }
-        .nav-btn:nth-child(3) { animation-delay: 1s; }
+        /* --- 功能按钮：青碧色 --- */
+        .nav-btn:nth-child(2) {
+            background: linear-gradient(135deg, #5ec4b0, #3dab93);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(61, 171, 147, 0.35);
+            animation-delay: 0.5s;
+        }
+        .nav-btn:nth-child(2):hover {
+            background: linear-gradient(135deg, #72d0be, #50b8a1);
+            box-shadow: 0 6px 18px rgba(61, 171, 147, 0.50);
+            transform: translateY(-2px);
+        }
+        .nav-btn:nth-child(2):active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(61, 171, 147, 0.30);
+        }
+
+        /* --- 关于按钮：柔紫罗兰色 --- */
+        .nav-btn:nth-child(3) {
+            background: linear-gradient(135deg, #a78bfa, #8b6fe0);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(139, 111, 224, 0.35);
+            animation-delay: 1s;
+        }
+        .nav-btn:nth-child(3):hover {
+            background: linear-gradient(135deg, #b9a3fb, #9d84ec);
+            box-shadow: 0 6px 18px rgba(139, 111, 224, 0.50);
+            transform: translateY(-2px);
+        }
+        .nav-btn:nth-child(3):active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(139, 111, 224, 0.30);
+        }
 
         /* ===== 淡入淡出动画 ===== */
         @keyframes fadeInOut {
@@ -109,18 +175,25 @@
         .main-text {
             /* 思源黑体 */
             font-family: 'Noto Sans SC', '思源黑体', 'Source Han Sans SC', sans-serif;
-            /* 字号 30px */
-            font-size: 30px;
+            /* 字号 50px */
+            font-size: 50px;
             /* 黑色 */
             color: #000000;
             /* 居中 */
             text-align: center;
-            /* 阴影效果 */
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+            /* 多层阴影叠加 — 增强立体感和深度 */
+            text-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.8),
+                0 2px 3px rgba(0, 0, 0, 0.12),
+                0 4px 8px rgba(0, 0, 0, 0.10),
+                0 8px 16px rgba(0, 0, 0, 0.08),
+                0 12px 24px rgba(0, 0, 0, 0.06);
             /* 字重 */
-            font-weight: 500;
+            font-weight: 700;
+            /* 字间距 — 增加呼吸感 */
+            letter-spacing: 4px;
             /* 行高 */
-            line-height: 1.6;
+            line-height: 1.5;
             /* 确保文字在容器中居中 */
             margin: 0;
         }
@@ -130,13 +203,19 @@
         /* 平板及以下 */
         @media (max-width: 768px) {
             .site-wrapper {
-                padding: 60px 30px;
+                padding: 100px 30px 50px 30px;
                 min-width: 280px;
-                max-width: 95vw;
+                border-radius: 0;
             }
 
             .main-text {
-                font-size: 24px;
+                font-size: 32px;
+                letter-spacing: 2px;
+                text-shadow:
+                    0 1px 0 rgba(255, 255, 255, 0.8),
+                    0 2px 3px rgba(0, 0, 0, 0.12),
+                    0 4px 8px rgba(0, 0, 0, 0.10),
+                    0 6px 12px rgba(0, 0, 0, 0.06);
             }
 
             .nav-area {
@@ -149,19 +228,28 @@
             .nav-btn {
                 font-size: 14px;
                 padding: 6px 14px;
-                box-shadow: 0 3px 8px rgba(128, 128, 128, 0.3);
             }
+
+            .nav-btn:nth-child(1) { box-shadow: 0 3px 8px rgba(255, 107, 91, 0.35); }
+            .nav-btn:nth-child(2) { box-shadow: 0 3px 8px rgba(61, 171, 147, 0.35); }
+            .nav-btn:nth-child(3) { box-shadow: 0 3px 8px rgba(139, 111, 224, 0.35); }
         }
 
         /* 手机 */
         @media (max-width: 480px) {
             .site-wrapper {
-                padding: 40px 16px;
-                border-radius: 8px;
+                padding: 80px 16px 36px 16px;
+                border-radius: 0;
             }
 
             .main-text {
-                font-size: 20px;
+                font-size: 24px;
+                letter-spacing: 1px;
+                text-shadow:
+                    0 1px 0 rgba(255, 255, 255, 0.8),
+                    0 2px 3px rgba(0, 0, 0, 0.10),
+                    0 3px 6px rgba(0, 0, 0, 0.08),
+                    0 5px 10px rgba(0, 0, 0, 0.05);
             }
 
             .nav-area {
@@ -172,9 +260,12 @@
             .nav-btn {
                 font-size: 13px;
                 padding: 5px 10px;
-                box-shadow: 0 2px 6px rgba(128, 128, 128, 0.3);
                 border-radius: 4px;
             }
+
+            .nav-btn:nth-child(1) { box-shadow: 0 2px 6px rgba(255, 107, 91, 0.35); }
+            .nav-btn:nth-child(2) { box-shadow: 0 2px 6px rgba(61, 171, 147, 0.35); }
+            .nav-btn:nth-child(3) { box-shadow: 0 2px 6px rgba(139, 111, 224, 0.35); }
         }
     </style>
 </head>
