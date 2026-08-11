@@ -717,7 +717,7 @@ function update() {
     frameCount++;
 
     // 速度随距离递增
-    gameSpeed = 4 + distance / 80;
+    gameSpeed = 4 + distance / 160;  // 速度增长更平缓
     if (skillActive) gameSpeed *= 1.6;
 
     // 更新玩家
