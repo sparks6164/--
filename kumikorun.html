@@ -1015,7 +1015,7 @@ function draw() {
     ctx.fillStyle = '#c49a6c';
     ctx.fillRect(0, dirtTop, GAME_W, dirtH);
     // 泥土不规则纹理 —— 随背景滚动以体现地面移动
-    const bx = bgOffset * 0.7;  // 比草地慢，视差感
+    const bx = bgOffset;  // 与障碍物移动速度一致
     // 小石子
     ctx.fillStyle = '#b8895a';
     for (let i = (bx % 35); i < GAME_W + 20; i += 35) {
