@@ -1124,7 +1124,7 @@ function drawClouds() {
         { x: 720, y: 25, s: 1.1 },
     ];
     for (const c of clouds) {
-        const cx = ((c.x - bgOffset * 0.3) % (GAME_W + 200)) - 100;
+        const cx = ((c.x - bgOffset * 0.15) % (GAME_W + 200)) - 100;
         drawCloud(cx, c.y, c.s);
     }
 }
@@ -1145,7 +1145,7 @@ function drawCloud(x, y, s) {
 // ===== 游戏循环 =====
 function gameLoop() {
     if (gameState === 'playing') {
-        bgOffset += gameSpeed * 0.5;
+        bgOffset += gameSpeed;  // 地面与障碍物同速
     }
     update();
     draw();
