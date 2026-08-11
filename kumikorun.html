@@ -445,7 +445,7 @@ const player = {
         if (this.isJumping) return;
         // 自动取消下蹲
         this.isSquatting = false;
-        this.vy = -6.5;  // 恰好跳过障碍物的高度(约42px)
+        this.vy = -7.8;  // 跳跃高度约60px
         this.isJumping = true;
     },
 
@@ -481,15 +481,20 @@ const player = {
 
     getRect() {
         if (this.isSquatting && !this.isJumping) {
-            // 下蹲时碰撞箱减半
+            // 下蹲碰撞箱：半高，贴近地面
             return {
-                x: this.x + 8, y: this.y + this.height * 0.5,
-                w: this.width - 16, h: this.height * 0.45,
+                x: this.x + 8,
+                y: this.y - this.height * 0.5,
+                w: this.width - 16,
+                h: this.height * 0.45,
             };
         }
+        // 站立/奔跑碰撞箱
         return {
-            x: this.x + 10, y: this.y + 5,
-            w: this.width - 20, h: this.height - 12,
+            x: this.x + 10,
+            y: this.y - this.height + 5,
+            w: this.width - 20,
+            h: this.height - 12,
         };
     },
 
@@ -524,19 +529,19 @@ const player = {
             const sw = img.width * scale;
             const sh = img.height * scale;
             let sx = this.x + this.width / 2 - sw / 2;
-            let sy = this.y - sh + this.height;
+            let sy = this.y - sh;  // 脚底贴在地面线上
 
             if (this.isSquatting && !this.isJumping) {
-                // 下蹲时压缩
+                // 下蹲时纵向压缩
                 const squatScaleY = 0.55;
-                ctx.translate(sx + sw/2, this.y + 3);
+                ctx.translate(sx + sw/2, this.y);
                 ctx.scale(1, squatScaleY);
                 ctx.drawImage(img, -sw/2, -sh * squatScaleY, sw, sh);
             } else {
                 ctx.drawImage(img, sx, sy, sw, sh);
             }
         } else {
-            // 后备：简单矩形
+            // 后备占位
             let h = this.height;
             let y = this.y - h;
             if (this.isSquatting && !this.isJumping) {
@@ -545,7 +550,6 @@ const player = {
             }
             ctx.fillStyle = '#ff8866';
             ctx.fillRect(this.x, y, this.width, h);
-            // 头部
             ctx.fillStyle = '#ffbb99';
             ctx.beginPath();
             ctx.arc(this.x + this.width/2, y + 8, 12, 0, Math.PI*2);
@@ -559,31 +563,31 @@ const player = {
 function spawnObstacle() {
     const r = Math.random();
     if (r < 0.35) {
-        // 岩石 - 地面
+        // 岩石 - 地面（高44px）
         obstacles.push({
             type: 'rock',
             x: GAME_W + 20,
-            y: GROUND_Y - 32,
-            w: 28,
-            h: 32,
+            y: GROUND_Y - 44,
+            w: 32,
+            h: 44,
         });
     } else if (r < 0.7) {
-        // 树桩 - 地面
+        // 树桩 - 地面（高40px）
         obstacles.push({
             type: 'stump',
             x: GAME_W + 20,
-            y: GROUND_Y - 28,
-            w: 24,
-            h: 28,
+            y: GROUND_Y - 40,
+            w: 28,
+            h: 40,
         });
     } else {
-        // 飞鸟 - 空中
+        // 飞鸟 - 空中，下蹲可躲避，站立会撞到
         obstacles.push({
             type: 'bird',
             x: GAME_W + 20,
-            y: GROUND_Y - 110 - Math.random() * 40,
-            w: 40,
-            h: 24,
+            y: GROUND_Y - 90 - Math.random() * 25,
+            w: 42,
+            h: 26,
             wingPhase: Math.random() * Math.PI * 2,
         });
     }
