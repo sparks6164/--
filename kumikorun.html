@@ -445,7 +445,7 @@ const player = {
         if (this.isJumping) return;
         // 自动取消下蹲
         this.isSquatting = false;
-        this.vy = -7.8;  // 跳跃高度约60px
+        this.vy = -9.0;  // 跳跃高度约90px，腾空约0.67秒
         this.isJumping = true;
     },
 
@@ -505,7 +505,7 @@ const player = {
     },
 
     update() {
-        const GRAVITY = 0.5;
+        const GRAVITY = 0.45;  // 较轻重力，延长腾空时间
         if (this.isJumping) {
             this.y += this.vy;
             this.vy += GRAVITY;
