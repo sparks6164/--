@@ -438,7 +438,7 @@ const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window
 const BASE_SPEED = isMobile ? 8 : 3;        // 移动端 8, 电脑端 3
 const SPEED_SCALE = isMobile ? 400 : 160;    // 移动端缓慢增长，电脑端正常增长
 const GRAVITY = isMobile ? 0.64 : 0.32;      // 移动端腾空减半(~0.47s)，电脑端(~0.94s)
-const JUMP_VY = isMobile ? -9.0 : -9.0;       // 初速度一致
+const JUMP_VY = isMobile ? -9.44 : -9.78;      // 移动端+10%, 电脑端+18%
 let gameSpeed = BASE_SPEED;
 let skillEnergy = 0;
 const SKILL_MAX = 100;
@@ -840,9 +840,13 @@ function update() {
     // 更新粒子
     updateParticles();
 
-    // 生成障碍物
-    const spawnInterval = Math.max(60, 150 - distance / 15);
-    if (frameCount % Math.floor(spawnInterval) === 0 && frameCount > 30) {
+    // 生成障碍物（移动端更频繁 + 随机性）
+    const baseInterval = isMobile
+        ? Math.max(35, 100 - distance / 12)   // 移动端：更密集
+        : Math.max(60, 150 - distance / 15);  // 电脑端
+    const jitter = isMobile ? (Math.random() - 0.5) * 20 : 0;  // 移动端±10帧随机
+    const spawnInterval = Math.floor(baseInterval + jitter);
+    if (spawnInterval > 0 && frameCount % Math.max(1, spawnInterval) === 0 && frameCount > 30) {
         spawnObstacle();
     }
 
