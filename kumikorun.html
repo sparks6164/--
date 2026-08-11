@@ -436,7 +436,9 @@ let distance = 0;
 // 设备检测 & 速度参数
 const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 820;
 const BASE_SPEED = isMobile ? 8 : 3;        // 移动端 8, 电脑端 3
-const SPEED_SCALE = isMobile ? 400 : 99999;  // 移动端 1/400, 电脑端几乎不变
+const SPEED_SCALE = isMobile ? 400 : 160;    // 移动端缓慢增长，电脑端正常增长
+const GRAVITY = isMobile ? 0.64 : 0.32;      // 移动端腾空减半(~0.47s)，电脑端(~0.94s)
+const JUMP_VY = isMobile ? -9.0 : -9.0;       // 初速度一致
 let gameSpeed = BASE_SPEED;
 let skillEnergy = 0;
 const SKILL_MAX = 100;
@@ -476,7 +478,7 @@ const player = {
         if (this.isJumping) return;
         // 自动取消下蹲
         this.isSquatting = false;
-        this.vy = -9.0;  // 跳跃高度约90px，腾空约0.67秒
+        this.vy = JUMP_VY;
         this.isJumping = true;
     },
 
@@ -536,10 +538,10 @@ const player = {
     },
 
     update() {
-        const GRAVITY = 0.32;  // 更轻重力，腾空约0.94秒
+        const g = GRAVITY;  // 设备相关重力
         if (this.isJumping) {
             this.y += this.vy;
-            this.vy += GRAVITY;
+            this.vy += g;
             if (this.y >= GROUND_Y) {
                 this.y = GROUND_Y;
                 this.vy = 0;
