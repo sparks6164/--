@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>久美子快跑</title>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== 游戏容器 ===== */
+.game-container {
+    position: relative;
+    width: 800px;
+    height: 450px;
+    max-width: 100vw;
+    max-height: 100vh;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(100, 100, 255, 0.3);
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== 覆盖UI层 ===== */
+.ui-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 顶部栏 */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 14px;
+}
+
+.top-left-btns {
+    display: flex;
+    gap: 6px;
+}
+
+.top-left-btns button {
+    pointer-events: auto;
+    font-size: 11px;
+    padding: 5px 10px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    background: rgba(0,0,0,0.45);
+    color: #ccc;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.top-left-btns button:hover {
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    border-color: rgba(255,255,255,0.6);
+}
+
+/* 技能条 & 分数 */
+.skill-score-area {
+    text-align: right;
+}
+
+.skill-bar-outer {
+    width: 140px;
+    height: 14px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 7px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+.skill-bar-inner {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff6600, #ffaa00, #ffdd00);
+    border-radius: 7px;
+    transition: width 0.15s linear;
+}
+.skill-bar-inner.full {
+    animation: skillPulse 0.6s ease-in-out infinite;
+}
+@keyframes skillPulse {
+    0%,100% { filter: brightness(1); }
+    50% { filter: brightness(1.5); }
+}
+
+.score-display {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+}
+
+/* 底部控制按钮 */
+.control-area {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+}
+
+.ctrl-btn {
+    pointer-events: auto;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.5);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    font-family: inherit;
+    letter-spacing: 1px;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ctrl-btn:active {
+    transform: scale(0.9);
+}
+
+.btn-jump {
+    background: rgba(255,140,0,0.7);
+    border-color: rgba(255,180,60,0.8);
+    box-shadow: 0 4px 15px rgba(255,140,0,0.4);
+}
+.btn-squat {
+    background: rgba(60,180,255,0.7);
+    border-color: rgba(100,200,255,0.8);
+    box-shadow: 0 4px 15px rgba(60,180,255,0.4);
+}
+.btn-skill {
+    background: rgba(180,180,180,0.5);
+    border-color: rgba(200,200,200,0.5);
+    box-shadow: 0 4px 15px rgba(150,150,150,0.25);
+    font-size: 12px;
+}
+.btn-skill.ready {
+    background: rgba(255,50,80,0.8);
+    border-color: rgba(255,120,140,0.9);
+    box-shadow: 0 4px 20px rgba(255,50,80,0.6);
+    animation: skillGlow 0.8s ease-in-out infinite;
+}
+@keyframes skillGlow {
+    0%,100% { box-shadow: 0 4px 20px rgba(255,50,80,0.6); }
+    50% { box-shadow: 0 4px 30px rgba(255,100,130,0.9); }
+}
+
+/* ===== 弹窗覆盖层 ===== */
+.overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    pointer-events: auto;
+}
+
+.overlay-box {
+    background: #1e1e32;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 14px;
+    padding: 30px 36px;
+    text-align: center;
+    color: #fff;
+    min-width: 260px;
+    max-width: 90%;
+}
+
+.overlay-box h2 {
+    font-size: 24px;
+    margin-bottom: 18px;
+    letter-spacing: 2px;
+}
+
+.overlay-box .final-score {
+    font-size: 42px;
+    font-weight: 700;
+    color: #ffcc00;
+    margin: 10px 0 6px;
+}
+
+.overlay-box .score-label {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 20px;
+}
+
+.overlay-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.overlay-btn {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+
+.btn-restart {
+    background: linear-gradient(135deg, #ff8a00, #ff5500);
+    color: #fff;
+}
+.btn-restart:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(255,100,0,0.5); }
+
+.btn-quit {
+    background: rgba(255,255,255,0.12);
+    color: #ccc;
+    border: 1px solid rgba(255,255,255,0.25);
+}
+.btn-quit:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+.help-text {
+    text-align: left;
+    font-size: 13px;
+    line-height: 2;
+    color: #ccc;
+}
+.help-text b { color: #ffaa00; }
+
+/* 响应式 */
+@media (max-width: 820px) {
+    .game-container {
+        width: 100vw;
+        height: 56.25vw;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    .ctrl-btn {
+        width: 52px; height: 52px;
+        font-size: 13px;
+    }
+    .control-area { gap: 10px; bottom: 12px; right: 12px; }
+    .skill-bar-outer { width: 110px; height: 11px; }
+    .score-display { font-size: 15px; }
+    .top-bar { padding: 6px 10px; }
+    .top-left-btns button { font-size: 10px; padding: 4px 7px; }
+}
+</style>
+</head>
+<body>
+
+<div class="game-container" id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI 覆盖层 -->
+    <div class="ui-layer" id="uiLayer">
+        <!-- 顶部栏 -->
+        <div class="top-bar">
+            <div class="top-left-btns">
+                <button onclick="showOverlay('settings')" title="设置">⚙ 设置</button>
+                <button onclick="showOverlay('help')" title="帮助">? 帮助</button>
+                <button onclick="showOverlay('about')" title="关于">ℹ 关于</button>
+            </div>
+            <div class="skill-score-area">
+                <div class="skill-bar-outer">
+                    <div class="skill-bar-inner" id="skillBar"></div>
+                </div>
+                <div class="score-display" id="scoreDisplay">0 分</div>
+            </div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="control-area">
+            <button class="ctrl-btn btn-squat" id="btnSquat"
+                    onmousedown="player.squat(true)" onmouseup="player.squat(false)"
+                    onmouseleave="player.squat(false)"
+                    ontouchstart="player.squat(true); event.preventDefault()"
+                    ontouchend="player.squat(false)"
+                    ontouchcancel="player.squat(false)">下蹲</button>
+            <button class="ctrl-btn btn-jump" id="btnJump"
+                    onmousedown="player.jump()"
+                    ontouchstart="player.jump(); event.preventDefault()">跳跃</button>
+            <button class="ctrl-btn btn-skill" id="btnSkill"
+                    onclick="player.useSkill()">技能</button>
+        </div>
+    </div>
+
+    <!-- 弹窗：游戏结束 -->
+    <div class="overlay" id="gameOverOverlay" style="display:none;">
+        <div class="overlay-box">
+            <h2>💀 游戏结束</h2>
+            <div class="final-score" id="finalScore">0</div>
+            <div class="score-label">分</div>
+            <div class="overlay-btns">
+                <button class="overlay-btn btn-restart" onclick="restartGame()">🔄 重新开始</button>
+                <button class="overlay-btn btn-quit" onclick="quitGame()">🚪 退出</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗：设置 -->
+    <div class="overlay" id="settingsOverlay" style="display:none;">
+        <div class="overlay-box">
+            <h2>⚙ 设置</h2>
+            <p style="color:#ccc; margin:10px 0;">音量（开发中）</p>
+            <div class="overlay-btns" style="margin-top:16px;">
+                <button class="overlay-btn btn-quit" onclick="hideOverlay('settings')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗：帮助 -->
+    <div class="overlay" id="helpOverlay" style="display:none;">
+        <div class="overlay-box">
+            <h2>? 游戏帮助</h2>
+            <div class="help-text">
+                <b>跳跃</b> — 躲避地面的岩石和树桩<br>
+                <b>下蹲</b> — 躲避空中飞行的鸟儿<br>
+                <b>技能</b> — 技能条满后可发动<br>
+                  进入无敌+加速状态5秒<br>
+                <b>酒瓶</b> — 收集后增加技能值<br>
+                <b>分数</b> — 每前进1米获得10分
+            </div>
+            <div class="overlay-btns" style="margin-top:16px;">
+                <button class="overlay-btn btn-quit" onclick="hideOverlay('help')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗：关于 -->
+    <div class="overlay" id="aboutOverlay" style="display:none;">
+        <div class="overlay-box">
+            <h2>ℹ 关于</h2>
+            <p style="color:#ccc; line-height:1.8;">
+                久美子快跑 v1.0<br>
+                一款网页跑酷小游戏<br>
+                Canvas + JavaScript
+            </p>
+            <div class="overlay-btns" style="margin-top:16px;">
+                <button class="overlay-btn btn-quit" onclick="hideOverlay('about')">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== 游戏引擎 ====================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const GAME_W = 800;
+const GAME_H = 450;
+
+// 地面线位置 (从顶部算)
+const GROUND_Y = 340;
+const GRASS_H = 8;
+
+// ===== 图片资源 =====
+const SPRITES = {
+    run: null,
+    squat: null,
+    jump: null,
+};
+
+// 加载图片
+function loadImage(src) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => { console.warn('Failed to load:', src); resolve(null); };
+        img.src = src;
+    });
+}
+
+// ===== 游戏状态 =====
+let gameState = 'waiting'; // waiting | playing | over
+let score = 0;
+let distance = 0;
+let gameSpeed = 4;        // 基础速度
+let skillEnergy = 0;
+const SKILL_MAX = 100;
+let skillActive = false;
+let skillTimer = 0;
+const SKILL_DURATION = 300; // 5秒 = 300帧 (60fps)
+
+// ===== 游戏对象 =====
+let obstacles = [];
+let bottles = [];
+let particles = [];
+let bgOffset = 0;
+let frameCount = 0;
+
+// ===== 玩家 =====
+const player = {
+    x: 140,
+    y: GROUND_Y,
+    width: 50,
+    height: 70,
+    vy: 0,
+    isJumping: false,
+    isSquatting: false,
+    groundY: GROUND_Y,
+    spriteScale: 0.18,
+
+    reset() {
+        this.y = GROUND_Y;
+        this.vy = 0;
+        this.isJumping = false;
+        this.isSquatting = false;
+        this.groundY = GROUND_Y;
+    },
+
+    jump() {
+        if (gameState !== 'playing') return;
+        if (this.isJumping) return;
+        // 自动取消下蹲
+        this.isSquatting = false;
+        this.vy = -6.5;  // 恰好跳过障碍物的高度(约42px)
+        this.isJumping = true;
+    },
+
+    squat(active) {
+        if (gameState !== 'playing') return;
+        if (active && this.isJumping) return; // 跳跃中不能下蹲
+        this.isSquatting = active;
+    },
+
+    useSkill() {
+        if (gameState !== 'playing') return;
+        if (skillEnergy < SKILL_MAX) return;
+        if (skillActive) return;
+
+        skillActive = true;
+        skillTimer = SKILL_DURATION;
+        skillEnergy = 0;
+        updateSkillBar();
+
+        // 特效粒子
+        for (let i = 0; i < 20; i++) {
+            particles.push({
+                x: this.x + this.width/2,
+                y: this.y,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 1) * 6,
+                life: 30 + Math.random() * 20,
+                color: Math.random() > 0.5 ? '#ff4444' : '#ffaa00',
+                size: 2 + Math.random() * 3,
+            });
+        }
+    },
+
+    getRect() {
+        if (this.isSquatting && !this.isJumping) {
+            // 下蹲时碰撞箱减半
+            return {
+                x: this.x + 8, y: this.y + this.height * 0.5,
+                w: this.width - 16, h: this.height * 0.45,
+            };
+        }
+        return {
+            x: this.x + 10, y: this.y + 5,
+            w: this.width - 20, h: this.height - 12,
+        };
+    },
+
+    getSpriteName() {
+        if (this.isJumping) return 'jump';
+        if (this.isSquatting) return 'squat';
+        return 'run';
+    },
+
+    update() {
+        const GRAVITY = 0.5;
+        if (this.isJumping) {
+            this.y += this.vy;
+            this.vy += GRAVITY;
+            if (this.y >= GROUND_Y) {
+                this.y = GROUND_Y;
+                this.vy = 0;
+                this.isJumping = false;
+            }
+        } else {
+            this.y = GROUND_Y;
+        }
+    },
+
+    draw(ctx) {
+        const spriteName = this.getSpriteName();
+        const img = SPRITES[spriteName];
+
+        ctx.save();
+        if (img && img.complete && img.naturalWidth > 0) {
+            const scale = this.spriteScale;
+            const sw = img.width * scale;
+            const sh = img.height * scale;
+            let sx = this.x + this.width / 2 - sw / 2;
+            let sy = this.y - sh + this.height;
+
+            if (this.isSquatting && !this.isJumping) {
+                // 下蹲时压缩
+                const squatScaleY = 0.55;
+                ctx.translate(sx + sw/2, this.y + 3);
+                ctx.scale(1, squatScaleY);
+                ctx.drawImage(img, -sw/2, -sh * squatScaleY, sw, sh);
+            } else {
+                ctx.drawImage(img, sx, sy, sw, sh);
+            }
+        } else {
+            // 后备：简单矩形
+            let h = this.height;
+            let y = this.y - h;
+            if (this.isSquatting && !this.isJumping) {
+                h = this.height * 0.5;
+                y = this.y - h;
+            }
+            ctx.fillStyle = '#ff8866';
+            ctx.fillRect(this.x, y, this.width, h);
+            // 头部
+            ctx.fillStyle = '#ffbb99';
+            ctx.beginPath();
+            ctx.arc(this.x + this.width/2, y + 8, 12, 0, Math.PI*2);
+            ctx.fill();
+        }
+        ctx.restore();
+    },
+};
+
+// ===== 障碍物 =====
+function spawnObstacle() {
+    const r = Math.random();
+    if (r < 0.35) {
+        // 岩石 - 地面
+        obstacles.push({
+            type: 'rock',
+            x: GAME_W + 20,
+            y: GROUND_Y - 32,
+            w: 28,
+            h: 32,
+        });
+    } else if (r < 0.7) {
+        // 树桩 - 地面
+        obstacles.push({
+            type: 'stump',
+            x: GAME_W + 20,
+            y: GROUND_Y - 28,
+            w: 24,
+            h: 28,
+        });
+    } else {
+        // 飞鸟 - 空中
+        obstacles.push({
+            type: 'bird',
+            x: GAME_W + 20,
+            y: GROUND_Y - 110 - Math.random() * 40,
+            w: 40,
+            h: 24,
+            wingPhase: Math.random() * Math.PI * 2,
+        });
+    }
+}
+
+function drawObstacle(ctx, obs) {
+    ctx.save();
+    if (skillActive) {
+        ctx.globalAlpha = 0.5;
+    }
+
+    if (obs.type === 'rock') {
+        // 灰色岩石
+        ctx.fillStyle = '#7a7a80';
+        ctx.beginPath();
+        ctx.moveTo(obs.x, obs.y + obs.h);
+        ctx.lineTo(obs.x + 5, obs.y + 8);
+        ctx.lineTo(obs.x + obs.w/2, obs.y);
+        ctx.lineTo(obs.x + obs.w - 5, obs.y + 6);
+        ctx.lineTo(obs.x + obs.w, obs.y + obs.h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+    } else if (obs.type === 'stump') {
+        // 棕色树桩
+        ctx.fillStyle = '#8B6914';
+        ctx.fillRect(obs.x + 3, obs.y + 6, obs.w - 6, obs.h - 6);
+        ctx.fillStyle = '#6B4F12';
+        ctx.fillRect(obs.x, obs.y, obs.w, 8);
+        // 年轮
+        ctx.strokeStyle = '#6B4F12';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(obs.x + obs.w/2, obs.y + obs.h/2 + 2, 5, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(obs.x + obs.w/2, obs.y + obs.h/2 + 2, 2.5, 0, Math.PI*2);
+        ctx.stroke();
+    } else if (obs.type === 'bird') {
+        // 飞鸟
+        const wingFlap = Math.sin(frameCount * 0.15 + obs.wingPhase) * 6;
+        ctx.fillStyle = '#334';
+        // 身体
+        ctx.beginPath();
+        ctx.ellipse(obs.x + obs.w/2, obs.y + obs.h/2, obs.w/3, obs.h/3, 0, 0, Math.PI*2);
+        ctx.fill();
+        // 翅膀
+        ctx.beginPath();
+        ctx.moveTo(obs.x + obs.w/2 - 4, obs.y + obs.h/2);
+        ctx.lineTo(obs.x + obs.w/2 - 14, obs.y + wingFlap);
+        ctx.lineTo(obs.x + obs.w/2 - 2, obs.y + obs.h/2 + 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(obs.x + obs.w/2 + 4, obs.y + obs.h/2);
+        ctx.lineTo(obs.x + obs.w/2 + 14, obs.y + wingFlap);
+        ctx.lineTo(obs.x + obs.w/2 + 2, obs.y + obs.h/2 + 2);
+        ctx.fill();
+        // 喙
+        ctx.fillStyle = '#f90';
+        ctx.beginPath();
+        ctx.moveTo(obs.x + obs.w - 2, obs.y + obs.h/2 - 2);
+        ctx.lineTo(obs.x + obs.w + 5, obs.y + obs.h/2);
+        ctx.lineTo(obs.x + obs.w - 2, obs.y + obs.h/2 + 2);
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
+// ===== 酒瓶 =====
+function spawnBottle() {
+    bottles.push({
+        x: GAME_W + 20 + Math.random() * 100,
+        y: GROUND_Y - 50 - Math.random() * 80,
+        w: 12,
+        h: 22,
+        sparkle: 0,
+    });
+}
+
+function drawBottle(ctx, b) {
+    ctx.save();
+    const shimmer = Math.sin(b.sparkle) * 0.3 + 0.7;
+    ctx.globalAlpha = shimmer;
+    // 瓶身
+    ctx.fillStyle = '#2d8a4e';
+    ctx.fillRect(b.x + 2, b.y + 8, b.w - 4, b.h - 8);
+    // 瓶颈
+    ctx.fillStyle = '#1a5c30';
+    ctx.fillRect(b.x + 3, b.y, b.w - 6, 10);
+    // 高光
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillRect(b.x + 3, b.y + 10, 2, b.h - 14);
+    // 标签
+    ctx.fillStyle = '#f5e6c8';
+    ctx.fillRect(b.x + 1, b.y + 10, b.w - 2, 5);
+    ctx.restore();
+}
+
+// ===== 粒子 =====
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.1;
+        p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+}
+
+function drawParticles(ctx) {
+    for (const p of particles) {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / 50;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+// ===== 主循环 =====
+function update() {
+    if (gameState !== 'playing') return;
+    frameCount++;
+
+    // 速度随距离递增
+    gameSpeed = 4 + distance / 80;
+    if (skillActive) gameSpeed *= 1.6;
+
+    // 更新玩家
+    player.update();
+
+    // 距离 & 分数
+    distance += gameSpeed / 60;
+    score = Math.floor(distance * 10);
+
+    // 技能计时器
+    if (skillActive) {
+        skillTimer--;
+        if (skillTimer <= 0) {
+            skillActive = false;
+        }
+    }
+
+    // 移动障碍物
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        obstacles[i].x -= gameSpeed;
+        if (obstacles[i].x < -60) obstacles.splice(i, 1);
+    }
+
+    // 移动酒瓶
+    for (let i = bottles.length - 1; i >= 0; i--) {
+        bottles[i].x -= gameSpeed;
+        bottles[i].sparkle += 0.08;
+        if (bottles[i].x < -30) bottles.splice(i, 1);
+    }
+
+    // 碰撞检测
+    if (!skillActive) {
+        const pr = player.getRect();
+        for (const obs of obstacles) {
+            const or = { x: obs.x + 4, y: obs.y + 3, w: obs.w - 8, h: obs.h - 6 };
+            if (rectCollide(pr, or)) {
+                gameOver();
+                return;
+            }
+        }
+    } else {
+        // 技能状态下撞碎障碍物
+        const pr = player.getRect();
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            const obs = obstacles[i];
+            if (obs.type === 'rock' || obs.type === 'stump') {
+                const or = { x: obs.x + 4, y: obs.y + 3, w: obs.w - 8, h: obs.h - 6 };
+                if (rectCollide(pr, or)) {
+                    // 撞碎！
+                    for (let j = 0; j < 8; j++) {
+                        particles.push({
+                            x: obs.x + obs.w/2, y: obs.y + obs.h/2,
+                            vx: (Math.random() - 0.5) * 6,
+                            vy: (Math.random() - 1) * 5 - 3,
+                            life: 12 + Math.random() * 15,
+                            color: obs.type === 'rock' ? '#999' : '#8B6914',
+                            size: 2 + Math.random() * 3,
+                        });
+                    }
+                    obstacles.splice(i, 1);
+                }
+            }
+        }
+    }
+
+    // 酒瓶收集
+    for (let i = bottles.length - 1; i >= 0; i--) {
+        const br = { x: bottles[i].x, y: bottles[i].y, w: bottles[i].w, h: bottles[i].h };
+        if (rectCollide(player.getRect(), br)) {
+            skillEnergy = Math.min(SKILL_MAX, skillEnergy + 25);
+            updateSkillBar();
+            bottles.splice(i, 1);
+            // 收集特效
+            for (let j = 0; j < 5; j++) {
+                particles.push({
+                    x: br.x + br.w/2, y: br.y,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: -2 - Math.random() * 3,
+                    life: 15 + Math.random() * 10,
+                    color: '#2d8a4e',
+                    size: 1.5 + Math.random() * 2,
+                });
+            }
+        }
+    }
+
+    // 更新粒子
+    updateParticles();
+
+    // 生成障碍物
+    const spawnInterval = Math.max(60, 150 - distance / 15);
+    if (frameCount % Math.floor(spawnInterval) === 0 && frameCount > 30) {
+        spawnObstacle();
+    }
+
+    // 生成酒瓶
+    if (frameCount % 180 === 0 && frameCount > 60) {
+        if (Math.random() < 0.5) spawnBottle();
+    }
+
+    // 更新UI
+    updateUI();
+}
+
+function rectCollide(a, b) {
+    return a.x < b.x + b.w &&
+           a.x + a.w > b.x &&
+           a.y < b.y + b.h &&
+           a.y + a.h > b.y;
+}
+
+function updateUI() {
+    document.getElementById('scoreDisplay').textContent = Math.floor(score) + ' 分';
+    updateSkillBar();
+}
+
+function updateSkillBar() {
+    const bar = document.getElementById('skillBar');
+    const pct = (skillEnergy / SKILL_MAX) * 100;
+    bar.style.width = pct + '%';
+    if (pct >= 100) {
+        bar.classList.add('full');
+    } else {
+        bar.classList.remove('full');
+    }
+
+    const btn = document.getElementById('btnSkill');
+    if (pct >= 100) {
+        btn.classList.add('ready');
+        btn.textContent = '⚡';
+    } else {
+        btn.classList.remove('ready');
+        btn.textContent = '技能';
+    }
+}
+
+// ===== 绘制 =====
+function draw() {
+    ctx.clearRect(0, 0, GAME_W, GAME_H);
+
+    // 天空
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    skyGrad.addColorStop(0, '#e8f4fd');
+    skyGrad.addColorStop(0.7, '#f0f7fc');
+    skyGrad.addColorStop(1, '#ffffff');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, GAME_W, GROUND_Y);
+
+    // 云朵 (装饰)
+    if (gameState === 'playing' || gameState === 'over') {
+        drawClouds();
+    }
+
+    // 草坪
+    ctx.fillStyle = '#5da83d';
+    ctx.fillRect(0, GROUND_Y - 2, GAME_W, GRASS_H + 2);
+    // 草叶细节
+    ctx.fillStyle = '#6cc24a';
+    for (let i = (bgOffset % 20); i < GAME_W; i += 20) {
+        ctx.beginPath();
+        ctx.moveTo(i, GROUND_Y - 2);
+        ctx.lineTo(i + 3, GROUND_Y - 8);
+        ctx.lineTo(i + 6, GROUND_Y - 2);
+        ctx.fill();
+    }
+
+    // 泥土
+    ctx.fillStyle = '#c49a6c';
+    ctx.fillRect(0, GROUND_Y + GRASS_H, GAME_W, GAME_H - GROUND_Y - GRASS_H);
+    // 泥土纹理
+    ctx.fillStyle = '#b8895a';
+    for (let i = (bgOffset % 40); i < GAME_W; i += 40) {
+        ctx.beginPath();
+        ctx.arc(i, GROUND_Y + GRASS_H + 15, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // 地表线
+    ctx.strokeStyle = '#8B7355';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y + GRASS_H);
+    ctx.lineTo(GAME_W, GROUND_Y + GRASS_H);
+    ctx.stroke();
+
+    // 酒瓶
+    for (const b of bottles) {
+        drawBottle(ctx, b);
+    }
+
+    // 障碍物
+    for (const obs of obstacles) {
+        drawObstacle(ctx, obs);
+    }
+
+    // 玩家
+    if (gameState === 'playing' || gameState === 'over') {
+        player.draw(ctx);
+    }
+
+    // 粒子
+    drawParticles(ctx);
+
+    // 技能激活指示器
+    if (skillActive) {
+        const remaining = skillTimer / SKILL_DURATION;
+        ctx.strokeStyle = `rgba(255, 50, 50, ${0.5 + remaining * 0.3})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x + player.width/2, player.y - player.height/2, 40,
+                -Math.PI/2, -Math.PI/2 + Math.PI * 2 * remaining);
+        ctx.stroke();
+
+        // "无敌"文字
+        ctx.fillStyle = `rgba(255, 200, 0, ${0.6 + remaining * 0.4})`;
+        ctx.font = 'bold 14px "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('无敌', player.x + player.width/2, player.y - player.height - 15);
+        ctx.textAlign = 'start';
+    }
+
+    // 等待状态
+    if (gameState === 'waiting') {
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.font = 'bold 28px "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('点击「跳跃」开始游戏', GAME_W/2, GAME_H/2);
+        ctx.textAlign = 'start';
+        // 画静态玩家
+        player.draw(ctx);
+    }
+}
+
+function drawClouds() {
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    const clouds = [
+        { x: 80, y: 45, s: 1 },
+        { x: 350, y: 30, s: 1.3 },
+        { x: 600, y: 55, s: 0.9 },
+        { x: 720, y: 25, s: 1.1 },
+    ];
+    for (const c of clouds) {
+        const cx = ((c.x - bgOffset * 0.3) % (GAME_W + 200)) - 100;
+        drawCloud(cx, c.y, c.s);
+    }
+}
+
+function drawCloud(x, y, s) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+    ctx.beginPath();
+    ctx.arc(0, 0, 18, 0, Math.PI * 2);
+    ctx.arc(18, -5, 14, 0, Math.PI * 2);
+    ctx.arc(30, 2, 16, 0, Math.PI * 2);
+    ctx.arc(12, 5, 13, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+// ===== 游戏循环 =====
+function gameLoop() {
+    if (gameState === 'playing') {
+        bgOffset += gameSpeed * 0.5;
+    }
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// ===== 游戏控制 =====
+function startGame() {
+    gameState = 'playing';
+    score = 0;
+    distance = 0;
+    gameSpeed = 4;
+    skillEnergy = 0;
+    skillActive = false;
+    skillTimer = 0;
+    obstacles = [];
+    bottles = [];
+    particles = [];
+    bgOffset = 0;
+    frameCount = 0;
+    player.reset();
+    document.getElementById('gameOverOverlay').style.display = 'none';
+    updateSkillBar();
+    document.getElementById('scoreDisplay').textContent = '0 分';
+}
+
+function gameOver() {
+    gameState = 'over';
+    document.getElementById('finalScore').textContent = Math.floor(score);
+    document.getElementById('gameOverOverlay').style.display = 'flex';
+    // 死亡粒子
+    for (let i = 0; i < 25; i++) {
+        particles.push({
+            x: player.x + player.width/2,
+            y: player.y - player.height/2,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 1) * 8 - 2,
+            life: 20 + Math.random() * 30,
+            color: ['#ff4444', '#ff8888', '#ffaa00', '#ffffff'][Math.floor(Math.random()*4)],
+            size: 2 + Math.random() * 4,
+        });
+    }
+}
+
+function restartGame() {
+    startGame();
+}
+
+function quitGame() {
+    document.getElementById('gameOverOverlay').style.display = 'none';
+    window.location.href = 'index.html';
+}
+
+// ===== 弹窗管理 =====
+let preOverlayState = 'waiting';
+function showOverlay(name) {
+    preOverlayState = gameState;
+    if (gameState === 'playing') {
+        gameState = 'paused';
+    }
+    document.getElementById(name + 'Overlay').style.display = 'flex';
+}
+
+function hideOverlay(name) {
+    document.getElementById(name + 'Overlay').style.display = 'none';
+    if (gameState === 'paused') {
+        gameState = preOverlayState;
+    }
+}
+
+// ESC 关闭弹窗
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape') {
+        ['settings','help','about'].forEach(name => {
+            const el = document.getElementById(name + 'Overlay');
+            if (el && el.style.display === 'flex') hideOverlay(name);
+        });
+    }
+});
+
+// ===== 键盘控制 =====
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+        e.preventDefault();
+        if (gameState === 'waiting') startGame();
+        player.jump();
+    }
+    if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+        e.preventDefault();
+        if (gameState === 'waiting') startGame();
+        player.squat(true);
+    }
+    if (e.code === 'KeyD' || e.code === 'ShiftRight') {
+        e.preventDefault();
+        if (gameState === 'waiting') startGame();
+        player.useSkill();
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+        player.squat(false);
+    }
+});
+
+// ===== 响应式Canvas =====
+function resizeCanvas() {
+    const container = document.getElementById('gameContainer');
+    const rect = container.getBoundingClientRect();
+    // Canvas内部分辨率保持800x450
+    // 实际显示通过CSS缩放
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+// ===== 初始化 =====
+async function init() {
+    canvas.width = GAME_W;
+    canvas.height = GAME_H;
+
+    // 加载精灵图
+    SPRITES.run = await loadImage('奔跑1.png');
+    SPRITES.squat = await loadImage('下蹲1.png');
+    SPRITES.jump = await loadImage('跳跃.png');
+
+    console.log('Sprites loaded:', {
+        run: SPRITES.run?.naturalWidth + 'x' + SPRITES.run?.naturalHeight,
+        squat: SPRITES.squat?.naturalWidth + 'x' + SPRITES.squat?.naturalHeight,
+        jump: SPRITES.jump?.naturalWidth + 'x' + SPRITES.jump?.naturalHeight,
+    });
+
+    // 画初始画面
+    player.y = GROUND_Y;
+    draw();
+
+    // 开始游戏循环
+    gameLoop();
+}
+
+// 点击跳跃按钮也启动游戏
+const origJump = player.jump.bind(player);
+player.jump = function() {
+    if (gameState === 'waiting') startGame();
+    origJump();
+};
+const origSquat = player.squat.bind(player);
+player.squat = function(active) {
+    if (gameState === 'waiting' && active) startGame();
+    origSquat(active);
+};
+const origSkill = player.useSkill.bind(player);
+player.useSkill = function() {
+    if (gameState === 'waiting') startGame();
+    origSkill();
+};
+
+init();
+</script>
+</body>
+</html>
