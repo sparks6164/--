@@ -362,12 +362,19 @@ canvas {
         <div class="overlay-box" style="max-width:380px; max-height:80vh; overflow-y:auto; padding:24px 28px;">
             <h2>ℹ 关于</h2>
             <p style="color:#ccc; line-height:1.8; font-size:13px;">
-                久美子快跑 v1.2<br>
+                久美子快跑 v1.3<br>
                 Canvas 网页跑酷小游戏
             </p>
             <hr style="border-color:rgba(255,255,255,0.1); margin:14px 0;">
             <h3 style="color:#ffaa00; font-size:14px; text-align:left; margin-bottom:8px;">📋 更新日志</h3>
             <div style="text-align:left; font-size:12px; color:#aaa; line-height:1.9;">
+                <div style="margin-bottom:6px;">
+                    <b style="color:#ff8800;">v1.3</b> <span style="color:#666;">2026-08-11</span><br>
+                    · 移动端初速度+15%（8→9.2）<br>
+                    · 移动端障碍物更密集（间隔75→25帧）<br>
+                    · 移动端跳跃高度+10%，电脑端+18%<br>
+                    · 移动端重力翻倍（腾空-50%），电脑端恢复速度增长
+                </div>
                 <div style="margin-bottom:6px;">
                     <b style="color:#ff8800;">v1.2</b> <span style="color:#666;">2026-08-11</span><br>
                     · 电脑端初始速度降至3（-25%）<br>
@@ -435,7 +442,7 @@ let score = 0;
 let distance = 0;
 // 设备检测 & 速度参数
 const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 820;
-const BASE_SPEED = isMobile ? 8 : 3;        // 移动端 8, 电脑端 3
+const BASE_SPEED = isMobile ? 9.2 : 3;       // 移动端 9.2(+15%), 电脑端 3
 const SPEED_SCALE = isMobile ? 400 : 160;    // 移动端缓慢增长，电脑端正常增长
 const GRAVITY = isMobile ? 0.64 : 0.32;      // 移动端腾空减半(~0.47s)，电脑端(~0.94s)
 const JUMP_VY = isMobile ? -9.44 : -9.78;      // 移动端+10%, 电脑端+18%
@@ -840,11 +847,11 @@ function update() {
     // 更新粒子
     updateParticles();
 
-    // 生成障碍物（移动端更频繁 + 随机性）
+    // 生成障碍物（移动端更密集 + 更强随机性）
     const baseInterval = isMobile
-        ? Math.max(35, 100 - distance / 12)   // 移动端：更密集
+        ? Math.max(25, 75 - distance / 10)    // 移动端：更密集
         : Math.max(60, 150 - distance / 15);  // 电脑端
-    const jitter = isMobile ? (Math.random() - 0.5) * 20 : 0;  // 移动端±10帧随机
+    const jitter = isMobile ? (Math.random() - 0.5) * 30 : 0;  // 移动端±15帧随机
     const spawnInterval = Math.floor(baseInterval + jitter);
     if (spawnInterval > 0 && frameCount % Math.max(1, spawnInterval) === 0 && frameCount > 30) {
         spawnObstacle();
