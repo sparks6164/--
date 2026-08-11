@@ -406,7 +406,11 @@ function loadImage(src) {
 let gameState = 'waiting'; // waiting | playing | over
 let score = 0;
 let distance = 0;
-let gameSpeed = 4;        // 基础速度
+// 设备检测 & 速度参数
+const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 820;
+const BASE_SPEED = isMobile ? 8 : 3;        // 移动端 8, 电脑端 3
+const SPEED_SCALE = isMobile ? 400 : 99999;  // 移动端 1/400, 电脑端几乎不变
+let gameSpeed = BASE_SPEED;
 let skillEnergy = 0;
 const SKILL_MAX = 100;
 let skillActive = false;
@@ -717,7 +721,7 @@ function update() {
     frameCount++;
 
     // 速度随距离递增
-    gameSpeed = 4 + distance / 80;
+    gameSpeed = BASE_SPEED + distance / SPEED_SCALE;
     if (skillActive) gameSpeed *= 1.6;
 
     // 更新玩家
@@ -992,7 +996,7 @@ function startGame() {
     gameState = 'playing';
     score = 0;
     distance = 0;
-    gameSpeed = 4;
+    gameSpeed = BASE_SPEED;
     skillEnergy = 0;
     skillActive = false;
     skillTimer = 0;
