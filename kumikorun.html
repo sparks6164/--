@@ -362,12 +362,18 @@ canvas {
         <div class="overlay-box" style="max-width:380px; max-height:80vh; overflow-y:auto; padding:24px 28px;">
             <h2>ℹ 关于</h2>
             <p style="color:#ccc; line-height:1.8; font-size:13px;">
-                久美子快跑 v1.6<br>
+                久美子快跑 v1.7<br>
                 Canvas 网页跑酷小游戏
             </p>
             <hr style="border-color:rgba(255,255,255,0.1); margin:14px 0;">
             <h3 style="color:#ffaa00; font-size:14px; text-align:left; margin-bottom:8px;">📋 更新日志</h3>
             <div style="text-align:left; font-size:12px; color:#aaa; line-height:1.9;">
+                <div style="margin-bottom:6px;">
+                    <b style="color:#ff8800;">v1.7</b> <span style="color:#666;">2026-08-11</span><br>
+                    · 泥土层增加不规则纹理（石子/斑块/裂缝）随背景滚动<br>
+                    · 酒瓶尺寸+15%（14×25）<br>
+                    · 移动端酒瓶出现频率+50%
+                </div>
                 <div style="margin-bottom:6px;">
                     <b style="color:#ff8800;">v1.6</b> <span style="color:#666;">2026-08-11</span><br>
                     · 起跳落地速度×1.5（腾空时间不变，手感更利落）<br>
@@ -777,8 +783,8 @@ function spawnBottle() {
     bottles.push({
         x: GAME_W + 20 + Math.random() * 100,
         y: GROUND_Y - 50 - Math.random() * 80,
-        w: 12,
-        h: 22,
+        w: 14,
+        h: 25,
         sparkle: 0,
     });
 }
@@ -932,7 +938,8 @@ function update() {
     }
 
     // 生成酒瓶
-    if (frameCount % 180 === 0 && frameCount > 60) {
+    const bottleInterval = isMobile ? 120 : 180;  // 移动端频率+50%
+    if (frameCount % bottleInterval === 0 && frameCount > 60) {
         if (Math.random() < 0.5) spawnBottle();
     }
 
@@ -1003,21 +1010,46 @@ function draw() {
     }
 
     // 泥土
+    const dirtTop = GROUND_Y + GRASS_H;
+    const dirtH = GAME_H - dirtTop;
     ctx.fillStyle = '#c49a6c';
-    ctx.fillRect(0, GROUND_Y + GRASS_H, GAME_W, GAME_H - GROUND_Y - GRASS_H);
-    // 泥土纹理
+    ctx.fillRect(0, dirtTop, GAME_W, dirtH);
+    // 泥土不规则纹理 —— 随背景滚动以体现地面移动
+    const bx = bgOffset * 0.7;  // 比草地慢，视差感
+    // 小石子
     ctx.fillStyle = '#b8895a';
-    for (let i = (bgOffset % 40); i < GAME_W; i += 40) {
+    for (let i = (bx % 35); i < GAME_W + 20; i += 35) {
+        const sy = dirtTop + 8 + ((i * 7) % 17);
         ctx.beginPath();
-        ctx.arc(i, GROUND_Y + GRASS_H + 15, 3, 0, Math.PI * 2);
+        ctx.arc(i, sy, 2 + ((i * 3) % 3), 0, Math.PI * 2);
         ctx.fill();
+    }
+    // 暗色斑块
+    ctx.fillStyle = '#a87840';
+    for (let i = ((bx + 17) % 50); i < GAME_W + 30; i += 50) {
+        const py = dirtTop + 12 + ((i * 11) % 22);
+        ctx.beginPath();
+        ctx.ellipse(i, py, 5 + ((i * 2) % 6), 2.5 + ((i * 3) % 3), (i * 0.3) % Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // 细碎纹理（小裂缝/根须感）
+    ctx.strokeStyle = '#9a6d3a';
+    ctx.lineWidth = 0.8;
+    for (let i = ((bx + 25) % 60); i < GAME_W + 40; i += 60) {
+        const lx = i;
+        const ly = dirtTop + 5 + ((i * 13) % 28);
+        ctx.beginPath();
+        ctx.moveTo(lx, ly);
+        ctx.lineTo(lx + 8, ly + 4);
+        ctx.lineTo(lx + 14, ly + 1);
+        ctx.stroke();
     }
     // 地表线
     ctx.strokeStyle = '#8B7355';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(0, GROUND_Y + GRASS_H);
-    ctx.lineTo(GAME_W, GROUND_Y + GRASS_H);
+    ctx.moveTo(0, dirtTop);
+    ctx.lineTo(GAME_W, dirtTop);
     ctx.stroke();
 
     // 酒瓶
