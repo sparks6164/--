@@ -266,14 +266,21 @@ canvas {
         border-radius: 0;
     }
     .ctrl-btn {
-        width: 52px; height: 52px;
-        font-size: 13px;
+        width: 62px; height: 62px;
+        font-size: 15px;
     }
-    .control-area { gap: 10px; bottom: 12px; right: 12px; }
-    .skill-bar-outer { width: 110px; height: 11px; }
-    .score-display { font-size: 15px; }
-    .top-bar { padding: 6px 10px; }
-    .top-left-btns button { font-size: 10px; padding: 4px 7px; }
+    .control-area { gap: 14px; bottom: 18px; right: 16px; }
+    .skill-bar-outer { width: 120px; height: 14px; }
+    .score-display { font-size: 17px; }
+    .top-bar { padding: 8px 12px; }
+    .top-left-btns button { font-size: 11px; padding: 5px 9px; }
+}
+@media (max-width: 480px) {
+    .ctrl-btn {
+        width: 56px; height: 56px;
+        font-size: 14px;
+    }
+    .control-area { gap: 10px; bottom: 14px; right: 10px; }
 }
 </style>
 </head>
@@ -406,12 +413,15 @@ function loadImage(src) {
 let gameState = 'waiting'; // waiting | playing | over
 let score = 0;
 let distance = 0;
-let gameSpeed = 4;        // 基础速度
+let gameSpeed = 4;        // 基础速度 (px/帧@60fps)
 let skillEnergy = 0;
 const SKILL_MAX = 100;
 let skillActive = false;
 let skillTimer = 0;
-const SKILL_DURATION = 300; // 5秒 = 300帧 (60fps)
+const SKILL_DURATION = 5.0; // 5秒
+let lastTime = 0;
+let spawnTimer = 0;
+let bottleTimer = 0;
 
 // ===== 游戏对象 =====
 let obstacles = [];
@@ -504,15 +514,19 @@ const player = {
         return 'run';
     },
 
-    update() {
+    update(sm) {
         const GRAVITY = 0.32;  // 更轻重力，腾空约0.94秒
         if (this.isJumping) {
-            this.y += this.vy;
-            this.vy += GRAVITY;
-            if (this.y >= GROUND_Y) {
-                this.y = GROUND_Y;
-                this.vy = 0;
-                this.isJumping = false;
+            // delta-time物理：每帧执行sm次小步长
+            for (let s = 0; s < sm; s++) {
+                this.y += this.vy;
+                this.vy += GRAVITY;
+                if (this.y >= GROUND_Y) {
+                    this.y = GROUND_Y;
+                    this.vy = 0;
+                    this.isJumping = false;
+                    break;
+                }
             }
         } else {
             this.y = GROUND_Y;
@@ -689,13 +703,13 @@ function drawBottle(ctx, b) {
 }
 
 // ===== 粒子 =====
-function updateParticles() {
+function updateParticles(sm) {
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.1;
-        p.life--;
+        p.x += p.vx * sm;
+        p.y += p.vy * sm;
+        p.vy += 0.1 * sm;
+        p.life -= sm;
         if (p.life <= 0) particles.splice(i, 1);
     }
 }
@@ -712,24 +726,25 @@ function drawParticles(ctx) {
 }
 
 // ===== 主循环 =====
-function update() {
+function update(dt) {
     if (gameState !== 'playing') return;
-    frameCount++;
+    const sm = dt * 60;  // 归一化到60fps
+    frameCount += sm;
 
     // 速度随距离递增
-    gameSpeed = 4 + distance / 160;  // 速度增长更平缓
+    gameSpeed = 4 + distance / 160;
     if (skillActive) gameSpeed *= 1.6;
 
-    // 更新玩家
-    player.update();
+    // 更新玩家（delta-time物理）
+    player.update(sm);
 
     // 距离 & 分数
-    distance += gameSpeed / 60;
+    distance += gameSpeed * sm / 60;
     score = Math.floor(distance * 10);
 
-    // 技能计时器
+    // 技能计时器（秒）
     if (skillActive) {
-        skillTimer--;
+        skillTimer -= dt;
         if (skillTimer <= 0) {
             skillActive = false;
         }
@@ -737,14 +752,14 @@ function update() {
 
     // 移动障碍物
     for (let i = obstacles.length - 1; i >= 0; i--) {
-        obstacles[i].x -= gameSpeed;
+        obstacles[i].x -= gameSpeed * sm;
         if (obstacles[i].x < -60) obstacles.splice(i, 1);
     }
 
     // 移动酒瓶
     for (let i = bottles.length - 1; i >= 0; i--) {
-        bottles[i].x -= gameSpeed;
-        bottles[i].sparkle += 0.08;
+        bottles[i].x -= gameSpeed * sm;
+        bottles[i].sparkle += 0.08 * sm;
         if (bottles[i].x < -30) bottles.splice(i, 1);
     }
 
@@ -766,7 +781,6 @@ function update() {
             if (obs.type === 'rock' || obs.type === 'stump') {
                 const or = { x: obs.x + 4, y: obs.y + 3, w: obs.w - 8, h: obs.h - 6 };
                 if (rectCollide(pr, or)) {
-                    // 撞碎！
                     for (let j = 0; j < 8; j++) {
                         particles.push({
                             x: obs.x + obs.w/2, y: obs.y + obs.h/2,
@@ -790,7 +804,6 @@ function update() {
             skillEnergy = Math.min(SKILL_MAX, skillEnergy + 25);
             updateSkillBar();
             bottles.splice(i, 1);
-            // 收集特效
             for (let j = 0; j < 5; j++) {
                 particles.push({
                     x: br.x + br.w/2, y: br.y,
@@ -805,20 +818,23 @@ function update() {
     }
 
     // 更新粒子
-    updateParticles();
+    updateParticles(sm);
 
-    // 生成障碍物
-    const spawnInterval = Math.max(60, 150 - distance / 15);
-    if (frameCount % Math.floor(spawnInterval) === 0 && frameCount > 30) {
+    // 时间基生成障碍物
+    const spawnInterval = Math.max(1.0, 2.5 - distance / 900);  // 秒
+    spawnTimer += dt;
+    if (spawnTimer >= spawnInterval && distance > 0.5) {
         spawnObstacle();
+        spawnTimer = 0;
     }
 
-    // 生成酒瓶
-    if (frameCount % 180 === 0 && frameCount > 60) {
+    // 时间基生成酒瓶
+    bottleTimer += dt;
+    if (bottleTimer >= 3.0 && distance > 1) {
         if (Math.random() < 0.5) spawnBottle();
+        bottleTimer = 0;
     }
 
-    // 更新UI
     updateUI();
 }
 
@@ -978,11 +994,17 @@ function drawCloud(x, y, s) {
 }
 
 // ===== 游戏循环 =====
-function gameLoop() {
+function gameLoop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    let dt = (timestamp - lastTime) / 1000;  // 秒
+    if (dt <= 0) dt = 0.016;
+    if (dt > 0.1) dt = 0.1;  // 防止切后台后跳帧
+    lastTime = timestamp;
+
     if (gameState === 'playing') {
-        bgOffset += gameSpeed * 0.5;
+        bgOffset += gameSpeed * dt * 60 * 0.5;
     }
-    update();
+    update(dt);
     draw();
     requestAnimationFrame(gameLoop);
 }
@@ -1001,6 +1023,9 @@ function startGame() {
     particles = [];
     bgOffset = 0;
     frameCount = 0;
+    spawnTimer = 0;
+    bottleTimer = 0;
+    lastTime = 0;
     player.reset();
     document.getElementById('gameOverOverlay').style.display = 'none';
     updateSkillBar();
