@@ -505,7 +505,7 @@ const player = {
     },
 
     update() {
-        const GRAVITY = 0.45;  // 较轻重力，延长腾空时间
+        const GRAVITY = 0.32;  // 更轻重力，腾空约0.94秒
         if (this.isJumping) {
             this.y += this.vy;
             this.vy += GRAVITY;
@@ -581,11 +581,11 @@ function spawnObstacle() {
             h: 40,
         });
     } else {
-        // 飞鸟 - 空中，下蹲可躲避，站立会撞到
+        // 飞鸟 - 站立必撞，下蹲可躲避
         obstacles.push({
             type: 'bird',
             x: GAME_W + 20,
-            y: GROUND_Y - 90 - Math.random() * 25,
+            y: GROUND_Y - 65 - Math.random() * 20,
             w: 42,
             h: 26,
             wingPhase: Math.random() * Math.PI * 2,
