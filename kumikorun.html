@@ -362,12 +362,17 @@ canvas {
         <div class="overlay-box" style="max-width:380px; max-height:80vh; overflow-y:auto; padding:24px 28px;">
             <h2>ℹ 关于</h2>
             <p style="color:#ccc; line-height:1.8; font-size:13px;">
-                久美子快跑 v1.4<br>
+                久美子快跑 v1.5<br>
                 Canvas 网页跑酷小游戏
             </p>
             <hr style="border-color:rgba(255,255,255,0.1); margin:14px 0;">
             <h3 style="color:#ffaa00; font-size:14px; text-align:left; margin-bottom:8px;">📋 更新日志</h3>
             <div style="text-align:left; font-size:12px; color:#aaa; line-height:1.9;">
+                <div style="margin-bottom:6px;">
+                    <b style="color:#ff8800;">v1.5</b> <span style="color:#666;">2026-08-11</span><br>
+                    · 树桩高度随机（30~60px），忽高忽低<br>
+                    · 新增障碍物"垂枝"：从天上垂下，须下蹲躲避
+                </div>
                 <div style="margin-bottom:6px;">
                     <b style="color:#ff8800;">v1.4</b> <span style="color:#666;">2026-08-11</span><br>
                     · 障碍物最小间距（电脑端140px / 移动端100px）<br>
@@ -618,7 +623,7 @@ function spawnObstacle() {
     }
 
     const r = Math.random();
-    if (r < 0.35) {
+    if (r < 0.30) {
         // 岩石 - 地面（高44px）
         obstacles.push({
             type: 'rock',
@@ -627,16 +632,17 @@ function spawnObstacle() {
             w: 32,
             h: 44,
         });
-    } else if (r < 0.7) {
-        // 树桩 - 地面（高40px）
+    } else if (r < 0.55) {
+        // 树桩 - 高度随机（30~60px）
+        const stumpH = 30 + Math.random() * 30;
         obstacles.push({
             type: 'stump',
             x: spawnX,
-            y: GROUND_Y - 40,
+            y: GROUND_Y - Math.round(stumpH),
             w: 28,
-            h: 40,
+            h: Math.round(stumpH),
         });
-    } else {
+    } else if (r < 0.80) {
         // 飞鸟 - 站立必撞，下蹲可躲避
         obstacles.push({
             type: 'bird',
@@ -645,6 +651,19 @@ function spawnObstacle() {
             w: 42,
             h: 26,
             wingPhase: Math.random() * Math.PI * 2,
+        });
+    } else {
+        // 垂枝 - 从天上垂下，站立必撞，下蹲可躲避
+        // branchBottom 在 GROUND_Y-45 到 GROUND_Y-60 之间（280~295）
+        // 站立玩家顶部≈275，下蹲玩家顶部≈305
+        const branchBottom = GROUND_Y - 45 - Math.random() * 15;
+        obstacles.push({
+            type: 'branch',
+            x: spawnX,
+            y: 10,
+            w: 16,
+            h: branchBottom - 10,
+            swayPhase: Math.random() * Math.PI * 2,
         });
     }
 }
@@ -709,6 +728,35 @@ function drawObstacle(ctx, obs) {
         ctx.moveTo(obs.x + obs.w - 2, obs.y + obs.h/2 - 2);
         ctx.lineTo(obs.x + obs.w + 5, obs.y + obs.h/2);
         ctx.lineTo(obs.x + obs.w - 2, obs.y + obs.h/2 + 2);
+        ctx.fill();
+    } else if (obs.type === 'branch') {
+        // 垂枝 - 从天上垂下
+        const sway = Math.sin(frameCount * 0.04 + obs.swayPhase) * 4;
+        const topY = obs.y;
+        const botY = obs.y + obs.h;
+        const midX = obs.x + obs.w/2 + sway;
+        // 主干
+        ctx.strokeStyle = '#5a3a1a';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(midX, topY);
+        ctx.lineTo(midX, botY);
+        ctx.stroke();
+        // 小枝桠
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(midX, topY + 30);
+        ctx.lineTo(midX - 14, topY + 42);
+        ctx.moveTo(midX, topY + 50);
+        ctx.lineTo(midX + 12, topY + 58);
+        ctx.stroke();
+        // 叶子
+        ctx.fillStyle = '#3a6b2a';
+        ctx.beginPath();
+        ctx.ellipse(midX - 14, topY + 40, 10, 5, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(midX + 12, topY + 56, 9, 5, 0.3, 0, Math.PI * 2);
         ctx.fill();
     }
     ctx.restore();
