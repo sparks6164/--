@@ -362,12 +362,17 @@ canvas {
         <div class="overlay-box" style="max-width:380px; max-height:80vh; overflow-y:auto; padding:24px 28px;">
             <h2>ℹ 关于</h2>
             <p style="color:#ccc; line-height:1.8; font-size:13px;">
-                久美子快跑 v1.3<br>
+                久美子快跑 v1.4<br>
                 Canvas 网页跑酷小游戏
             </p>
             <hr style="border-color:rgba(255,255,255,0.1); margin:14px 0;">
             <h3 style="color:#ffaa00; font-size:14px; text-align:left; margin-bottom:8px;">📋 更新日志</h3>
             <div style="text-align:left; font-size:12px; color:#aaa; line-height:1.9;">
+                <div style="margin-bottom:6px;">
+                    <b style="color:#ff8800;">v1.4</b> <span style="color:#666;">2026-08-11</span><br>
+                    · 障碍物最小间距（电脑端140px / 移动端100px）<br>
+                    · 防止障碍物连在一起出现
+                </div>
                 <div style="margin-bottom:6px;">
                     <b style="color:#ff8800;">v1.3</b> <span style="color:#666;">2026-08-11</span><br>
                     · 移动端初速度+15%（8→9.2）<br>
@@ -600,13 +605,24 @@ const player = {
 };
 
 // ===== 障碍物 =====
+const MIN_OBSTACLE_GAP = isMobile ? 100 : 140;  // 障碍物最小间距
+
 function spawnObstacle() {
+    // 找到最右侧障碍物，确保最小间距
+    let spawnX = GAME_W + 20;
+    for (const obs of obstacles) {
+        const rightEdge = obs.x + obs.w;
+        if (rightEdge + MIN_OBSTACLE_GAP > spawnX) {
+            spawnX = rightEdge + MIN_OBSTACLE_GAP;
+        }
+    }
+
     const r = Math.random();
     if (r < 0.35) {
         // 岩石 - 地面（高44px）
         obstacles.push({
             type: 'rock',
-            x: GAME_W + 20,
+            x: spawnX,
             y: GROUND_Y - 44,
             w: 32,
             h: 44,
@@ -615,7 +631,7 @@ function spawnObstacle() {
         // 树桩 - 地面（高40px）
         obstacles.push({
             type: 'stump',
-            x: GAME_W + 20,
+            x: spawnX,
             y: GROUND_Y - 40,
             w: 28,
             h: 40,
@@ -624,7 +640,7 @@ function spawnObstacle() {
         // 飞鸟 - 站立必撞，下蹲可躲避
         obstacles.push({
             type: 'bird',
-            x: GAME_W + 20,
+            x: spawnX,
             y: GROUND_Y - 65 - Math.random() * 20,
             w: 42,
             h: 26,
